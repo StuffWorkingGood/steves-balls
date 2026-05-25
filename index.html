@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Steve Loves Balls</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1a1410;
+    --cream:#f4ead5;
+    --rust:#d2491a;
+    --gold:#e8a32c;
+    --olive:#5c6b3a;
+    --blush:#e89b8a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Fraunces',serif;
+    overflow-x:hidden;
+    cursor:default;
+  }
+  ::selection{background:var(--rust);color:var(--cream)}
+
+  /* grain */
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* floating balls bg */
+  .ball-field{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  .fball{position:absolute;border-radius:50%;opacity:.18}
+
+  section{position:relative;z-index:2;padding:0 6vw}
+
+  /* HERO */
+  .hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding-top:8vh}
+  .eyebrow{font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.45em;font-size:.72rem;color:var(--rust);margin-bottom:1.4rem;font-weight:700}
+  h1{
+    font-family:'Anton',sans-serif;
+    font-size:clamp(4rem,18vw,15rem);
+    line-height:.82;
+    text-transform:uppercase;
+    color:var(--ink);
+    position:relative;
+  }
+  h1 .balls{color:var(--rust);display:block;position:relative}
+  h1 .balls::after{
+    content:"●  ●";font-family:'Anton';color:var(--gold);
+    position:absolute;font-size:.18em;top:-.4em;right:-.1em;letter-spacing:-.05em;
+  }
+  .subline{font-size:clamp(1rem,2.4vw,1.5rem);font-style:italic;max-width:30ch;margin-top:1.8rem;color:var(--olive)}
+  .scroll-cue{position:absolute;bottom:3vh;font-family:'Space Mono';font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;animation:bob 2s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(8px)}}
+
+  /* MARQUEE */
+  .marquee{background:var(--ink);color:var(--cream);padding:1.1rem 0;overflow:hidden;white-space:nowrap;border-top:4px solid var(--rust);border-bottom:4px solid var(--rust);z-index:3;position:relative}
+  .marquee div{display:inline-block;animation:scroll 22s linear infinite;font-family:'Anton';text-transform:uppercase;font-size:1.4rem;letter-spacing:.05em}
+  .marquee span{margin:0 1.5rem;color:var(--gold)}
+  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  /* MANIFESTO */
+  .manifesto{padding-top:14vh;padding-bottom:14vh;max-width:62rem;margin:0 auto}
+  .manifesto h2{font-family:'Anton';font-size:clamp(2rem,6vw,4.5rem);text-transform:uppercase;line-height:.95;margin-bottom:2rem;color:var(--rust)}
+  .manifesto p{font-size:clamp(1.1rem,2.4vw,1.6rem);line-height:1.5;margin-bottom:1.4rem;max-width:46ch}
+  .manifesto p .big{font-style:italic;color:var(--olive);font-weight:600}
+
+  /* COLLECTION GRID */
+  .collection{padding-top:10vh;padding-bottom:14vh}
+  .sec-label{font-family:'Space Mono';text-transform:uppercase;letter-spacing:.4em;font-size:.75rem;color:var(--rust);margin-bottom:.8rem;font-weight:700}
+  .sec-title{font-family:'Anton';font-size:clamp(2.2rem,7vw,5rem);text-transform:uppercase;margin-bottom:3rem;line-height:.9}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.2rem}
+  .card{
+    background:var(--ink);color:var(--cream);border-radius:16px;padding:1.6rem;position:relative;overflow:hidden;
+    min-height:200px;display:flex;flex-direction:column;justify-content:flex-end;
+    transition:transform .35s cubic-bezier(.2,.9,.3,1.3),box-shadow .35s;cursor:pointer;
+  }
+  .card:hover{transform:translateY(-8px) rotate(-1.5deg);box-shadow:10px 14px 0 var(--rust)}
+  .card .orb{position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;opacity:.85;transition:transform .5s}
+  .card:hover .orb{transform:scale(1.4) rotate(20deg)}
+  .card h3{font-family:'Anton';font-size:1.5rem;text-transform:uppercase;line-height:.95;z-index:2}
+  .card p{font-family:'Space Mono';font-size:.78rem;margin-top:.5rem;color:var(--gold);z-index:2;line-height:1.4}
+
+  /* RATING / QUOTES */
+  .quotes{background:var(--rust);color:var(--cream);padding-top:12vh;padding-bottom:12vh}
+  .quotes .sec-label{color:var(--gold)}
+  .quotes .sec-title{color:var(--cream)}
+  .qgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.6rem;margin-top:1rem}
+  .quote{background:var(--cream);color:var(--ink);padding:1.8rem;border-radius:14px;transform:rotate(var(--r));position:relative}
+  .quote p{font-style:italic;font-size:1.15rem;line-height:1.4;margin-bottom:1rem}
+  .quote cite{font-family:'Space Mono';font-style:normal;font-size:.72rem;text-transform:uppercase;letter-spacing:.15em;color:var(--rust);font-weight:700}
+  .stars{color:var(--gold);font-size:1.1rem;margin-bottom:.8rem}
+
+  /* COUNTER */
+  .counter{text-align:center;padding-top:14vh;padding-bottom:8vh}
+  .counter .num{font-family:'Anton';font-size:clamp(4rem,16vw,12rem);color:var(--rust);line-height:.85}
+  .counter .cap{font-family:'Space Mono';text-transform:uppercase;letter-spacing:.3em;font-size:.85rem;margin-top:1rem}
+
+  /* CTA */
+  .cta{text-align:center;padding-top:8vh;padding-bottom:16vh;max-width:50rem;margin:0 auto}
+  .cta h2{font-family:'Anton';font-size:clamp(2.4rem,8vw,6rem);text-transform:uppercase;line-height:.85;margin-bottom:1.5rem}
+  .cta p{font-size:1.2rem;font-style:italic;color:var(--olive);margin-bottom:2.5rem}
+  .btn{
+    display:inline-block;background:var(--ink);color:var(--cream);font-family:'Anton';text-transform:uppercase;
+    font-size:1.3rem;padding:1rem 2.6rem;border-radius:50px;text-decoration:none;letter-spacing:.04em;
+    transition:transform .25s,background .25s;border:none;cursor:pointer;
+  }
+  .btn:hover{transform:scale(1.06) rotate(-2deg);background:var(--rust)}
+
+  footer{background:var(--ink);color:var(--cream);text-align:center;padding:3rem 6vw;font-family:'Space Mono';font-size:.75rem;letter-spacing:.1em;position:relative;z-index:3}
+  footer .disclaimer{opacity:.55;margin-top:1rem;max-width:50ch;margin-left:auto;margin-right:auto;line-height:1.6}
+  footer a{color:var(--gold)}
+
+  @media(max-width:600px){
+    h1 .balls::after{display:none}
+    .card:hover{transform:translateY(-5px)}
+  }
+</style>
+</head>
+<body>
+
+<div class="ball-field" id="ballField"></div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="eyebrow">A Lifelong Devotion</div>
+  <h1>Steve Loves<span class="balls">Balls</span></h1>
+  <p class="subline">Big balls. Small balls. Balls of every conceivable kind. One man's unwavering passion.</p>
+  <div class="scroll-cue">↓ scroll to grasp it ↓</div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee">
+  <div>
+    HE LOVES THEM ROUND <span>●</span> HE LOVES THEM HEAVY <span>●</span> HE CAN'T GET ENOUGH <span>●</span> SOME SAY TOO MANY BALLS <span>●</span> STEVE SAYS NEVER ENOUGH <span>●</span> HE LOVES THEM ROUND <span>●</span> HE LOVES THEM HEAVY <span>●</span> HE CAN'T GET ENOUGH <span>●</span> SOME SAY TOO MANY BALLS <span>●</span> STEVE SAYS NEVER ENOUGH <span>●</span>
+  </div>
+</div>
+
+<!-- MANIFESTO -->
+<section class="manifesto">
+  <h2>It started young.</h2>
+  <p>Most boys outgrow it. Steve never did. From the very first time one was placed in his tiny hands, he knew. <span class="big">This was the thing.</span></p>
+  <p>While other men chase wealth and status, Steve chases something purer. He has held balls of every size. He has cradled the small ones with care and wrestled the truly massive ones to the ground.</p>
+  <p>He doesn't discriminate. Smooth or textured, firm or soft, a tidy little pair or one absolute unit. <span class="big">If it's round, Steve wants to hold it.</span></p>
+</section>
+
+<!-- COLLECTION -->
+<section class="collection">
+  <div class="sec-label">The Collection</div>
+  <h2 class="sec-title">A Ball For<br>Every Mood</h2>
+  <div class="grid" id="grid"></div>
+</section>
+
+<!-- COUNTER -->
+<section class="counter">
+  <div class="num" id="counter">0</div>
+  <div class="cap">Balls Handled & Counting</div>
+</section>
+
+<!-- QUOTES -->
+<section class="quotes">
+  <div class="sec-label">Testimonials</div>
+  <h2 class="sec-title">What They're Saying</h2>
+  <div class="qgrid">
+    <div class="quote" style="--r:-2deg">
+      <div class="stars">★★★★★</div>
+      <p>"I've never met anyone so committed to balls. He just gets it."</p>
+      <cite>— Dave, longtime friend</cite>
+    </div>
+    <div class="quote" style="--r:1.5deg">
+      <div class="stars">★★★★★</div>
+      <p>"Steve handled my two perfectly. Gentle but confident."</p>
+      <cite>— Local bowling league captain</cite>
+    </div>
+    <div class="quote" style="--r:-1deg">
+      <div class="stars">★★★★★</div>
+      <p>"Honestly? The man's got a real grip on the whole thing."</p>
+      <cite>— His very supportive wife</cite>
+    </div>
+    <div class="quote" style="--r:2deg">
+      <div class="stars">★★★★★</div>
+      <p>"Came for one ball. Steve showed me dozens. No regrets."</p>
+      <cite>— A satisfied visitor</cite>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+  <h2>Got Balls?</h2>
+  <p>Steve would love to see them. All shapes, all sizes. No ball too big, no pair too small.</p>
+  <button class="btn" id="ctaBtn">Show Steve Your Balls</button>
+</section>
+
+<footer>
+  STEVE LOVES BALLS™ &nbsp;·&nbsp; EST. THE DAY HE FIRST PICKED ONE UP
+  <div class="disclaimer">This is a parody/joke website. It is, and we cannot stress this enough, literally about spherical objects. Bowling balls. Tennis balls. Ball bearings. Get your mind out of wherever it went. · Built on <a href="https://stuffworkinggood.github.io">stuffworkinggood.github.io</a></div>
+</footer>
+
+<script>
+  // floating background balls
+  const colors=['#d2491a','#e8a32c','#5c6b3a','#e89b8a','#1a1410'];
+  const field=document.getElementById('ballField');
+  for(let i=0;i<14;i++){
+    const b=document.createElement('div');
+    b.className='fball';
+    const s=Math.random()*180+40;
+    b.style.width=b.style.height=s+'px';
+    b.style.left=Math.random()*100+'vw';
+    b.style.top=Math.random()*100+'vh';
+    b.style.background=colors[i%colors.length];
+    const dur=(Math.random()*20+18).toFixed(1);
+    b.style.animation=`drift${i%3} ${dur}s ease-in-out infinite alternate`;
+    field.appendChild(b);
+  }
+  const style=document.createElement('style');
+  style.textContent=`
+    @keyframes drift0{to{transform:translate(40px,-60px)}}
+    @keyframes drift1{to{transform:translate(-50px,50px)}}
+    @keyframes drift2{to{transform:translate(30px,70px)}}
+  `;
+  document.head.appendChild(style);
+
+  // collection cards
+  const balls=[
+    {n:"The Little Guy",d:"Small. Underrated. Steve respects it.",c:"#e8a32c"},
+    {n:"The Heavy Hitter",d:"Takes both hands. Steve is undeterred.",c:"#d2491a"},
+    {n:"The Classic Pair",d:"You don't get one without the other.",c:"#5c6b3a"},
+    {n:"The Smooth One",d:"Not a single bump. Steve approves.",c:"#e89b8a"},
+    {n:"The Textured One",d:"Grippy. Some prefer it this way.",c:"#e8a32c"},
+    {n:"The Absolute Unit",d:"Steve's personal favorite. No notes.",c:"#d2491a"},
+    {n:"The Bouncy Number",d:"Won't sit still. Steve loves the chase.",c:"#5c6b3a"},
+    {n:"The Vintage",d:"Worn from years of handling.",c:"#e89b8a"},
+  ];
+  const grid=document.getElementById('grid');
+  balls.forEach(b=>{
+    const c=document.createElement('div');
+    c.className='card';
+    c.innerHTML=`<div class="orb" style="background:${b.c}"></div><h3>${b.n}</h3><p>${b.d}</p>`;
+    grid.appendChild(c);
+  });
+
+  // counter animation on scroll
+  let counted=false;
+  const counterEl=document.getElementById('counter');
+  const target=14092;
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting && !counted){
+        counted=true;
+        let v=0;
+        const step=()=>{
+          v+=Math.ceil((target-v)/12);
+          if(v>=target)v=target;
+          counterEl.textContent=v.toLocaleString();
+          if(v<target)requestAnimationFrame(step);
+        };
+        step();
+      }
+    });
+  },{threshold:.5});
+  obs.observe(counterEl);
+
+  // CTA button gag
+  const lines=["He's thrilled.","Steve says nice pair.","Bigger than he expected.","He'd like to see them again.","Steve is honored.","A fine specimen.","Round. Very round. He loves it."];
+  let i=0;
+  document.getElementById('ctaBtn').addEventListener('click',function(){
+    this.textContent=lines[i%lines.length];
+    i++;
+  });
+</script>
+</body>
+</html>
