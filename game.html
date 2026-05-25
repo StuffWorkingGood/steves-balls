@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Steve's Ball Juggling Challenge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1a1410;
+    --cream:#f4ead5;
+    --rust:#d2491a;
+    --gold:#e8a32c;
+    --olive:#5c6b3a;
+    --blush:#e89b8a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;overflow:hidden}
+  body{
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Fraunces',serif;
+    touch-action:none;
+    position:relative;
+  }
+  ::selection{background:var(--rust);color:var(--cream)}
+
+  body::after{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  canvas{display:block;position:absolute;inset:0;z-index:1}
+
+  /* TOP BAR */
+  .topbar{
+    position:absolute;top:0;left:0;right:0;z-index:5;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:.9rem 1.1rem;pointer-events:none;
+  }
+  .back{
+    pointer-events:auto;text-decoration:none;color:var(--ink);
+    font-family:'Space Mono';font-size:.72rem;text-transform:uppercase;letter-spacing:.15em;
+    background:var(--cream);border:2px solid var(--ink);padding:.45rem .9rem;border-radius:40px;font-weight:700;
+  }
+  .scorebox{text-align:right;background:var(--cream);border:2px solid var(--ink);border-radius:14px;padding:.4rem .9rem;pointer-events:none}
+  .scorebox .s{font-family:'Anton';font-size:1.8rem;line-height:.9;color:var(--rust)}
+  .scorebox .l{font-family:'Space Mono';font-size:.55rem;text-transform:uppercase;letter-spacing:.2em}
+  .best{font-family:'Space Mono';font-size:.55rem;text-transform:uppercase;letter-spacing:.15em;color:var(--olive);margin-top:.2rem}
+
+  /* STEVE SAYS bubble */
+  .steve-says{
+    position:absolute;left:50%;top:5.6rem;transform:translateX(-50%);z-index:5;
+    background:var(--ink);color:var(--cream);padding:.7rem 1.3rem;border-radius:40px;
+    font-style:italic;font-size:1rem;max-width:80vw;text-align:center;
+    opacity:0;transition:opacity .4s,transform .4s;pointer-events:none;white-space:nowrap;
+    box-shadow:4px 5px 0 var(--rust);
+  }
+  .steve-says.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .steve-says::before{content:"STEVE: ";font-family:'Space Mono';font-style:normal;font-weight:700;color:var(--gold);font-size:.7rem;letter-spacing:.1em}
+
+  /* OVERLAYS */
+  .overlay{
+    position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;
+    justify-content:center;align-items:center;text-align:center;padding:2rem;
+    background:rgba(26,20,16,.92);color:var(--cream);
+  }
+  .overlay.hidden{display:none}
+  .overlay h1{font-family:'Anton';font-size:clamp(2.6rem,11vw,5rem);text-transform:uppercase;line-height:.85;color:var(--gold)}
+  .overlay h1 .r{color:var(--rust)}
+  .overlay .tag{font-style:italic;font-size:1.15rem;margin:1.2rem 0 .4rem;max-width:30ch}
+  .overlay .how{font-family:'Space Mono';font-size:.78rem;text-transform:uppercase;letter-spacing:.1em;color:var(--blush);margin-bottom:2rem;line-height:1.7}
+  .play-btn{
+    background:var(--rust);color:var(--cream);font-family:'Anton';text-transform:uppercase;
+    font-size:1.5rem;padding:1rem 2.8rem;border-radius:50px;border:none;cursor:pointer;letter-spacing:.04em;
+    transition:transform .2s;
+  }
+  .play-btn:hover{transform:scale(1.07) rotate(-2deg)}
+  .final-score{font-family:'Anton';font-size:clamp(4rem,20vw,9rem);color:var(--rust);line-height:.85;margin:.5rem 0}
+  .gameover-quote{font-style:italic;font-size:1.1rem;max-width:32ch;margin-bottom:.5rem;color:var(--cream)}
+  .gameover-quote .who{display:block;font-family:'Space Mono';font-style:normal;font-size:.65rem;text-transform:uppercase;letter-spacing:.15em;color:var(--gold);margin-top:.6rem}
+  .small-link{margin-top:1.8rem;font-family:'Space Mono';font-size:.7rem;text-transform:uppercase;letter-spacing:.15em}
+  .small-link a{color:var(--gold)}
+
+  /* lives */
+  .lives{position:absolute;bottom:1.1rem;left:50%;transform:translateX(-50%);z-index:5;display:flex;gap:.5rem;pointer-events:none}
+  .life{width:18px;height:18px;border-radius:50%;background:var(--rust);box-shadow:1px 1px 0 var(--ink)}
+  .life.lost{background:transparent;border:2px solid rgba(26,20,16,.3);box-shadow:none}
+</style>
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<div class="topbar">
+  <a class="back" href="index.html">← Steve's Home</a>
+  <div class="scorebox">
+    <div class="s" id="score">0</div>
+    <div class="l">Balls Kept Up</div>
+    <div class="best" id="best">Best: 0</div>
+  </div>
+</div>
+
+<div class="steve-says" id="steveSays"></div>
+
+<div class="lives" id="lives"></div>
+
+<!-- START -->
+<div class="overlay" id="startScreen">
+  <h1>Steve's Ball<br><span class="r">Juggling</span> Challenge</h1>
+  <p class="tag">"I've got a lot of balls in the air and I love every single one of them."</p>
+  <p class="how">Tap a ball to bop it back up.<br>Don't let one hit the floor.<br>Steve adds more the longer you last.</p>
+  <button class="play-btn" id="startBtn">Start Juggling</button>
+</div>
+
+<!-- GAME OVER -->
+<div class="overlay hidden" id="overScreen">
+  <h1>You Dropped<br>The <span class="r">Ball</span></h1>
+  <div class="final-score" id="finalScore">0</div>
+  <p class="gameover-quote" id="goQuote"></p>
+  <button class="play-btn" id="retryBtn">Pick 'Em Back Up</button>
+  <div class="small-link"><a href="index.html">← back to Steve's home</a></div>
+</div>
+
+<script>
+const cv=document.getElementById('game');
+const ctx=cv.getContext('2d');
+let W,H;
+function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;}
+resize();
+window.addEventListener('resize',resize);
+
+const COLORS=['#d2491a','#e8a32c','#5c6b3a','#e89b8a'];
+const GRAV=0.42;          // gravity per frame
+const BOP=-13;            // upward velocity on tap
+const SPAWN_EVERY=8;      // every N successful bops, add a ball
+
+let balls=[], score=0, best=Number(localStorage.getItem('steveBest')||0), running=false, bopsSinceSpawn=0, lives=3;
+
+// Steve's running commentary
+const LOVE_LINES=[
+  "Look at it go! I love that ball.",
+  "Round and proud, baby.",
+  "Never met a ball I didn't like.",
+  "Keep 'em up, keep 'em bouncy!",
+  "Big ball energy right here.",
+  "Two is good. More is better.",
+  "I could do this all day.",
+  "That's the good stuff.",
+  "Bounce for me, beautiful.",
+  "Every ball deserves a chance.",
+  "Smooth ones, textured ones, I love 'em all.",
+  "This is my happy place.",
+  "Don't drop my babies!",
+  "Gravity's the only enemy here.",
+  "More balls! More balls!"
+];
+const MILESTONE_LINES={
+  5:"FIVE bops! You've got a feel for it.",
+  10:"Ten! You handle balls like a pro.",
+  20:"Twenty! Steve is genuinely impressed.",
+  35:"Thirty-five?! These are MY kind of hands.",
+  50:"FIFTY. You and Steve should start a business.",
+  75:"Seventy-five. This is borderline professional ball care.",
+  100:"ONE HUNDRED. You absolute ball legend."
+};
+const GAMEOVER_QUOTES=[
+  {q:"It's okay. Balls fall. We pick them back up. That's the whole sport.",w:"— Steve, philosophically"},
+  {q:"You did great with my balls. Truly.",w:"— Steve, sincerely"},
+  {q:"One got away. Happens to the best of us.",w:"— Steve, forgivingly"},
+  {q:"I've dropped more balls than you've ever seen. Go again.",w:"— Steve, encouragingly"},
+  {q:"A ball on the floor is just a ball waiting to be loved again.",w:"— Steve, poetically"}
+];
+
+const steveEl=document.getElementById('steveSays');
+let sayTimer=null;
+function steveSay(txt,duration=2200){
+  steveEl.textContent=txt;
+  steveEl.classList.add('show');
+  clearTimeout(sayTimer);
+  sayTimer=setTimeout(()=>steveEl.classList.remove('show'),duration);
+}
+
+function makeBall(){
+  const r=Math.random()*18+26;
+  return {
+    x:Math.random()*(W-160)+80,
+    y:H*0.35+Math.random()*60,
+    vx:(Math.random()-0.5)*2,
+    vy:-(Math.random()*4+2),
+    r:r,
+    color:COLORS[Math.floor(Math.random()*COLORS.length)],
+    spin:0,
+    spinV:(Math.random()-0.5)*0.2,
+    squash:1
+  };
+}
+
+function reset(){
+  balls=[makeBall()];
+  score=0; bopsSinceSpawn=0; lives=3;
+  document.getElementById('score').textContent=0;
+  renderLives();
+}
+
+function renderLives(){
+  const c=document.getElementById('lives');
+  c.innerHTML='';
+  for(let i=0;i<3;i++){
+    const d=document.createElement('div');
+    d.className='life'+(i>=lives?' lost':'');
+    c.appendChild(d);
+  }
+}
+
+function loseLife(){
+  lives--;
+  renderLives();
+  if(lives<=0){ endGame(); }
+  else { steveSay("Whoa! Careful with my balls!",1600); }
+}
+
+function endGame(){
+  running=false;
+  if(score>best){ best=score; localStorage.setItem('steveBest',best); }
+  document.getElementById('best').textContent='Best: '+best;
+  document.getElementById('finalScore').textContent=score;
+  const gq=GAMEOVER_QUOTES[Math.floor(Math.random()*GAMEOVER_QUOTES.length)];
+  document.getElementById('goQuote').innerHTML=gq.q+'<span class="who">'+gq.w+'</span>';
+  document.getElementById('overScreen').classList.remove('hidden');
+}
+
+function startGame(){
+  reset();
+  document.getElementById('startScreen').classList.add('hidden');
+  document.getElementById('overScreen').classList.add('hidden');
+  document.getElementById('best').textContent='Best: '+best;
+  running=true;
+  steveSay("Here we go. Don't drop my babies!",2000);
+}
+
+function bopAt(px,py){
+  if(!running) return;
+  let hit=false;
+  for(const b of balls){
+    const dx=px-b.x, dy=py-b.y;
+    if(dx*dx+dy*dy <= (b.r+14)*(b.r+14)){
+      b.vy=BOP - Math.random()*2;
+      b.vx+=(b.x-px)*0.08;       // push away from tap point
+      b.squash=0.6;             // squash on hit
+      b.spinV=(Math.random()-0.5)*0.5;
+      hit=true;
+      score++;
+      bopsSinceSpawn++;
+      document.getElementById('score').textContent=score;
+
+      if(MILESTONE_LINES[score]){ steveSay(MILESTONE_LINES[score],2600); }
+      else if(Math.random()<0.28){ steveSay(LOVE_LINES[Math.floor(Math.random()*LOVE_LINES.length)]); }
+
+      if(bopsSinceSpawn>=SPAWN_EVERY){
+        bopsSinceSpawn=0;
+        balls.push(makeBall());
+        steveSay("Another ball! The more the merrier!",2000);
+      }
+      break; // one bop per tap
+    }
+  }
+}
+
+cv.addEventListener('pointerdown',e=>{
+  const rect=cv.getBoundingClientRect();
+  bopAt(e.clientX-rect.left, e.clientY-rect.top);
+});
+
+function drawBall(b){
+  ctx.save();
+  ctx.translate(b.x,b.y);
+  ctx.rotate(b.spin);
+  const sq=b.squash;
+  ctx.scale(1/sq,sq);
+  // shadow ring
+  ctx.beginPath();
+  ctx.arc(0,0,b.r,0,Math.PI*2);
+  ctx.fillStyle=b.color;
+  ctx.fill();
+  // seam line (ball-like detail)
+  ctx.strokeStyle='rgba(26,20,16,0.35)';
+  ctx.lineWidth=2;
+  ctx.beginPath();
+  ctx.ellipse(0,0,b.r*0.55,b.r,0,0,Math.PI*2);
+  ctx.stroke();
+  // highlight
+  ctx.beginPath();
+  ctx.arc(-b.r*0.3,-b.r*0.3,b.r*0.25,0,Math.PI*2);
+  ctx.fillStyle='rgba(244,234,213,0.4)';
+  ctx.fill();
+  ctx.restore();
+}
+
+function loop(){
+  ctx.clearRect(0,0,W,H);
+
+  // floor line
+  ctx.strokeStyle='rgba(26,20,16,0.15)';
+  ctx.lineWidth=3;
+  ctx.setLineDash([10,8]);
+  ctx.beginPath();
+  ctx.moveTo(0,H-40);
+  ctx.lineTo(W,H-40);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  if(running){
+    for(let i=balls.length-1;i>=0;i--){
+      const b=balls[i];
+      b.vy+=GRAV;
+      b.x+=b.vx;
+      b.y+=b.vy;
+      b.spin+=b.spinV;
+      // ease squash back to normal
+      b.squash+=(1-b.squash)*0.18;
+
+      // wall bounce
+      if(b.x<b.r){ b.x=b.r; b.vx*=-0.7; }
+      if(b.x>W-b.r){ b.x=W-b.r; b.vx*=-0.7; }
+      // ceiling
+      if(b.y<b.r+70){ b.y=b.r+70; b.vy*=-0.5; }
+
+      // floor = drop
+      if(b.y>H-40-b.r){
+        balls.splice(i,1);
+        loseLife();
+        if(balls.length===0 && lives>0){ balls.push(makeBall()); }
+      }
+    }
+    for(const b of balls){ drawBall(b); }
+  }
+  requestAnimationFrame(loop);
+}
+loop();
+
+document.getElementById('startBtn').addEventListener('click',startGame);
+document.getElementById('retryBtn').addEventListener('click',startGame);
+document.getElementById('best').textContent='Best: '+best;
+</script>
+</body>
+</html>
